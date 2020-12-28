@@ -1,10 +1,13 @@
 from typing import Dict, Tuple, List, Sequence, Type
+import logging
 import pandas as pd
 import numpy as np
 import os
 from config import path_config
 from graphviz import Digraph, nohtml
 from utils.appearence import AbstractAppearance, SimpleAppearance
+
+LOGGER = logging.getLogger(__name__)
 
 
 def test_dot():
@@ -90,9 +93,14 @@ def test_fdo():
 
 
 class Person:
-    """"""
+    """
+    It defines one person with all direct family connections
+    """
     def __init__(self, database_row: pd.Series):
-        """"""
+        """
+        Initialize person with anagraphic data
+        :param database_row: one row of connections dataframe
+        """
         self._person_id = int(database_row['id'])
         self._name = database_row['person_name']
         tmp = database_row['mother_id']
@@ -157,18 +165,29 @@ class Person:
         return self._spouses
 
     def add_parents(self, persons: Dict[str, "Person"]) -> None:
-        """"""
+        """
+        Add parents among all persons in the family
+        :param persons: list of all persons in the family
+        :return: None
+        """
         parents_ids = tuple([self._father_id, self._mother_id])
         if any(not np.isnan(x) for x in parents_ids):
             self._parents = tuple([persons[x] for x in parents_ids])
 
     def add_spouse(self, persons: Dict[str, "Person"]) -> None:
-        """"""
+        """
+        Add spouse/s from all persons in the family
+        :param persons: list of all persons in the family
+        :return: None
+        """
         self._spouses = tuple([persons[x] for x in self._spouse_ids])
 
     def add_children(self, persons: List["Person"]) -> None:
-        """"""
-        # TODO: add sanity checks
+        """
+        Add children from all persons in the family
+        :param persons: list of all persons in the family
+        :return: None
+        """
         tmp = []
         for person in persons:
             if self._person_id in (person.father_id, person.mother_id):
@@ -176,8 +195,11 @@ class Person:
         self._children = tuple(tmp)
 
     def add_siblings(self, persons: List["Person"]) -> None:
-        """"""
-        # TODO: add sanity checks
+        """
+        Add siblings and half-siblings from all persons in the family
+        :param persons: list of all persons in the family
+        :return: None
+        """
         tmp_siblings, tmp_half_siblings = [], []
         for person in persons:
             if person.parents is not None and self._parents is not None and person.person_id != self.person_id:
@@ -190,7 +212,12 @@ class Person:
 
 
 def create_family(df: pd.DataFrame) -> List[Person]:
-    """"""
+    """
+    Create family connections
+    :param df: dataframe with family connections
+    :return: list of persons containing connections
+    """
+    LOGGER.info(f"Create family connections.")
     persons = {}
     for _, row in df.iterrows():
         persons[row['id']] = Person(database_row=row)
@@ -208,8 +235,15 @@ def create_family(df: pd.DataFrame) -> List[Person]:
     return list(persons.values())
 
 
-def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], g: Digraph):
-    """"""
+def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], g: Digraph) -> None:
+    """
+    Create edge and nodes of the graph based on family connections
+    :param persons: List of persons
+    :param appearance: appearance of graph boxes
+    :param g: graph
+    :return: None
+    """
+    LOGGER.info(f'Assembly graph.')
     # create nodes
     nodes = set()
     for person in persons:
@@ -224,7 +258,7 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
                 g.node(tmp, nohtml(appearance.single_person(person.name)))
                 nodes.add(tmp)
             else:
-                return NotImplementedError
+                assert False, "Not implemented with more than one spouse"
 
     # create edges
     for person in persons:
@@ -250,4 +284,5 @@ def testing():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     testing()
