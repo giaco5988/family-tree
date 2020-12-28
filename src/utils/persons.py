@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List, Sequence
+from typing import Dict, Tuple, List, Sequence, Type
 import pandas as pd
 import numpy as np
 import os
@@ -208,15 +208,8 @@ def create_family(df: pd.DataFrame) -> List[Person]:
     return list(persons.values())
 
 
-def testing():
-    df = pd.read_csv('/Users/Giacomo/Downloads/family-tree - connections.csv')
-    g = Digraph('g',
-                filename=os.path.join(path_config.OUTPUT_PATH, 'btree_custom.gv'),
-                node_attr={'shape': 'record', 'height': '.1'})
-
-    # create family
-    persons = create_family(df=df)
-
+def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], g: Digraph):
+    """"""
     # create nodes
     nodes = set()
     for person in persons:
@@ -225,10 +218,10 @@ def testing():
             if len(person.spouse) == 1:
                 male = person.name if person.is_male else person.spouse[0].name
                 female = person.name if not person.is_male else person.spouse[0].name
-                g.node(tmp, nohtml(SimpleAppearance.couple(male_name=male, female_name=female)))
+                g.node(tmp, nohtml(appearance.couple(male_name=male, female_name=female)))
                 nodes.add(tmp)
             elif len(person.spouse) == 0:
-                g.node(tmp, nohtml(SimpleAppearance.single_person(person.name)))
+                g.node(tmp, nohtml(appearance.single_person(person.name)))
                 nodes.add(tmp)
             else:
                 return NotImplementedError
@@ -239,6 +232,19 @@ def testing():
             node_name, parents_node = person.get_node_name(), person.parents[0].get_node_name()
             edge_str = SimpleAppearance.edge_str(node_name, parents_node, person.is_male, len(person.spouse))
             g.edge(edge_str[0], edge_str[1])
+
+
+def testing():
+    df = pd.read_csv('/Users/Giacomo/Downloads/family-tree - connections.csv')
+    g = Digraph('g',
+                filename=os.path.join(path_config.OUTPUT_PATH, 'btree_custom.gv'),
+                node_attr={'shape': 'record', 'height': '.1'})
+
+    # create family
+    persons = create_family(df=df)
+
+    # create graph
+    assembly_graph(persons, SimpleAppearance, g)
 
     g.view()
 
