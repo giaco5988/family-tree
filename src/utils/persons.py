@@ -91,6 +91,8 @@ class Person:
         parents_ids = tuple([self._father_id, self._mother_id])
         if any(not np.isnan(x) for x in parents_ids):
             self._parents = tuple([persons[x] for x in parents_ids])
+        else:
+            self._parents = tuple()
 
     def add_spouse(self, persons: Dict[str, "Person"]) -> None:
         """
@@ -110,6 +112,7 @@ class Person:
         for person in persons:
             if self._person_id in (person.father_id, person.mother_id):
                 tmp.append(person)
+
         self._children = tuple(tmp)
 
     def add_siblings(self, persons: List["Person"]) -> None:
@@ -119,11 +122,13 @@ class Person:
         :return: None
         """
         tmp_siblings, tmp_half_siblings = [], []
+        these_parents = self._father_id, self._mother_id
         for person in persons:
-            if person.parents is not None and self._parents is not None and person.person_id != self.person_id:
-                if all(x is y for x, y in zip(self._parents, person.parents)):
+            person_parents = person.father_id, person.mother_id
+            if person.person_id != self.person_id:
+                if all(x == y for x, y in zip(these_parents, person_parents) if not np.isnan(x)):
                     tmp_siblings.append(person)
-                elif any(x is y for x, y in zip(self._parents, person.parents)):
+                elif any(x == y for x, y in zip(these_parents, person_parents) if not np.isnan(x)):
                     tmp_half_siblings.append(person)
 
         self._siblings, self._half_siblings = tuple(tmp_siblings), tuple(tmp_half_siblings)
@@ -136,18 +141,12 @@ def create_family(df: pd.DataFrame) -> List[Person]:
     :return: list of persons containing connections
     """
     LOGGER.info(f"Create family connections.")
-    persons = {}
-    for _, row in df.iterrows():
-        persons[row['id']] = Person(database_row=row)
+    persons = {row['id']: Person(database_row=row) for _, row in df.iterrows()}
 
     for person in persons.values():
         person.add_parents(persons)
         person.add_spouse(persons)
-
-    for person in persons.values():
         person.add_children(list(persons.values()))
-
-    for person in persons.values():
         person.add_siblings(list(persons.values()))
 
     return list(persons.values())
@@ -180,7 +179,7 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
 
     # create edges
     for person in persons:
-        if person.parents is not None:
+        if len(person.parents) > 0:
             node_name, parents_node = person.get_node_name(), person.parents[0].get_node_name()
             edge_str = SimpleAppearance.edge_str(node_name, parents_node, person.is_male, len(person.spouse))
             g.edge(edge_str[0], edge_str[1])
