@@ -126,9 +126,10 @@ class Person:
         for person in persons:
             person_parents = person.father_id, person.mother_id
             if person.person_id != self.person_id:
-                if all(x == y for x, y in zip(these_parents, person_parents) if not np.isnan(x)):
+                tmp = [x == y for x, y in zip(these_parents, person_parents) if not np.isnan(x)]
+                if len(tmp) == 2 and all(tmp):
                     tmp_siblings.append(person)
-                elif any(x == y for x, y in zip(these_parents, person_parents) if not np.isnan(x)):
+                elif any(tmp):
                     tmp_half_siblings.append(person)
 
         self._siblings, self._half_siblings = tuple(tmp_siblings), tuple(tmp_half_siblings)
