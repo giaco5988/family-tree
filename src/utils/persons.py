@@ -187,7 +187,7 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
 
 
 def testing():
-    df = pd.read_csv('/Users/Giacomo/Downloads/family-tree - connections.csv')
+    df = pd.read_csv('/Users/Giacomo/Desktop/family-tree - connections.csv')
     g = Digraph('g',
                 filename=os.path.join(path_config.OUTPUT_PATH, 'btree_custom.gv'),
                 node_attr={'shape': 'record', 'height': '.1'})
