@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List, Sequence, Type
+from typing import Dict, Tuple, List, Sequence, Type, Set
 import logging
 import pandas as pd
 import numpy as np
@@ -77,6 +77,23 @@ class Person:
         tmp = map(lambda x: str(x.person_id), sorted([self, *self._spouses], key=lambda x: x.is_male, reverse=True))
 
         return "node-" + "-".join(tmp)
+
+    def _count_spouses(self, visited_nodes: Set, count: List["Person"], person: "Person") -> List["Person"]:
+        """"""
+        for spouse in person.spouse:
+            if spouse.person_id not in visited_nodes:
+                count.append(spouse)
+                visited_nodes.add(spouse)
+                count = self._count_spouses(visited_nodes, count, spouse)
+
+        return count
+
+    def get_persons_in_node(self) -> Sequence["Person"]:
+        """"""
+        visited_nodes = {self.person_id}
+        count = [self]
+
+        return tuple(self._count_spouses(visited_nodes, count, self))
 
     @property
     def spouse(self) -> Sequence["Person"]:
@@ -167,7 +184,7 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
     for person in persons:
         tmp = person.get_node_name()
         if tmp not in nodes:
-            if len(person.spouse) == 1:
+            if len(person.spouse) == 1 and len(person.spouse[0].spouse) == 1:
                 male = person.name if person.is_male else person.spouse[0].name
                 female = person.name if not person.is_male else person.spouse[0].name
                 g.node(tmp, nohtml(appearance.couple(male_name=male, female_name=female)))
@@ -176,6 +193,7 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
                 g.node(tmp, nohtml(appearance.single_person(person.name)))
                 nodes.add(tmp)
             else:
+                # TODO: implement this one
                 assert False, "Not implemented with more than one spouse"
 
     # create edges
@@ -187,7 +205,8 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
 
 
 def testing():
-    df = pd.read_csv('/Users/Giacomo/Desktop/family-tree - connections.csv')
+    df = pd.read_csv('/Users/Giacomo/Downloads/family-tree - connections-1.csv')
+    assert len(set(df['id'])) == len(df), f'IDs are not unique.'
     g = Digraph('g',
                 filename=os.path.join(path_config.OUTPUT_PATH, 'btree_custom.gv'),
                 node_attr={'shape': 'record', 'height': '.1'})
