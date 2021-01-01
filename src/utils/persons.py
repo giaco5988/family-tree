@@ -74,23 +74,57 @@ class Person:
         Get node name from male to female
         :return:
         """
-        tmp = map(lambda x: str(x.person_id), sorted(self.get_persons_in_node(), key=lambda x: x.is_male, reverse=True))
+        tmp = [str(y) for y in sorted(x.person_id for x in self.get_persons_in_node())]
 
         return "node-" + "-".join(tmp)
 
-    def _list_spouses(self, visited_nodes: Set, count: List["Person"], person: "Person") -> List["Person"]:
-        """"""
+    def _list_spouses(self, visited_nodes: Set[int], node_persons: List["Person"], person: "Person") -> List["Person"]:
+        """
+        List all connection which form a node, also through multiple marriage
+        :param visited_nodes: nodes already visited
+        :param node_persons: persons in nodes already counted
+        :param person: current person
+        :return: list of persons already counted
+        """
         for spouse in person.spouse:
             if spouse.person_id not in visited_nodes:
-                count.append(spouse)
-                visited_nodes.add(spouse)
-                count = self._list_spouses(visited_nodes, count, spouse)
+                node_persons.append(spouse)
+                visited_nodes.add(spouse.person_id)
+                node_persons = self._list_spouses(visited_nodes, node_persons, spouse)
 
-        return count
+        return node_persons
 
     def get_persons_in_node(self) -> Sequence["Person"]:
-        """"""
+        """
+        Get all persons in this node
+        :return: persons belonging to same node as current person
+        """
         return tuple(self._list_spouses({self.person_id}, [self], self))
+
+    def _list_couples(self, visited_couples: Set[Sequence[int]], person: "Person") -> Set[Sequence[int]]:
+        """
+        Count couples
+        :param visited_couples: couples already counted
+        :param person: current person
+        :return: couples already accounted for
+        """
+        for spouse in person.spouse:
+            couple = tuple(sorted([person.person_id, spouse.person_id]))
+            if couple not in visited_couples:
+                visited_couples.add(couple)
+                visited_couples = self._list_couples(visited_couples, spouse)
+
+        return visited_couples
+
+    def get_couples_in_node(self, persons: Dict[int, "Person"]) -> List[Sequence["Person"]]:
+        """
+        Get all couples in this node, where this person is
+        :param persons: dictionary of (person_id, all-family-persons)
+        :return: list of couples
+        """
+        tmp = self._list_couples(set(), self)
+
+        return [tuple(sorted([persons[y] for y in x], key=lambda x: x.is_male, reverse=True)) for x in tmp]
 
     @property
     def spouse(self) -> Sequence["Person"]:
@@ -178,6 +212,7 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
     LOGGER.info(f'Assembly graph.')
     # create nodes
     nodes = set()
+    persons_dict = {x.person_id: x for x in persons}
     for person in persons:
         tmp = person.get_node_name()
         if tmp not in nodes:
@@ -191,7 +226,9 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
                 nodes.add(tmp)
             else:
                 # TODO: implement this one
-                assert False, "Not implemented with more than one spouse"
+                couples = [[y.name for y in x] for x in person.get_couples_in_node(persons_dict)]
+                g.node(tmp, nohtml(appearance.multi_couple(couples=couples)))
+                nodes.add(tmp)
 
     # create edges
     for person in persons:
@@ -210,6 +247,7 @@ def testing():
 
     # create family
     persons = create_family(df=df)
+    persons[26].get_persons_in_node()
 
     # create graph
     assembly_graph(persons, SimpleAppearance, g)
