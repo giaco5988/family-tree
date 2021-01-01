@@ -78,22 +78,19 @@ class Person:
 
         return "node-" + "-".join(tmp)
 
-    def _count_spouses(self, visited_nodes: Set, count: List["Person"], person: "Person") -> List["Person"]:
+    def _list_spouses(self, visited_nodes: Set, count: List["Person"], person: "Person") -> List["Person"]:
         """"""
         for spouse in person.spouse:
             if spouse.person_id not in visited_nodes:
                 count.append(spouse)
                 visited_nodes.add(spouse)
-                count = self._count_spouses(visited_nodes, count, spouse)
+                count = self._list_spouses(visited_nodes, count, spouse)
 
         return count
 
     def get_persons_in_node(self) -> Sequence["Person"]:
         """"""
-        visited_nodes = {self.person_id}
-        count = [self]
-
-        return tuple(self._count_spouses(visited_nodes, count, self))
+        return tuple(self._list_spouses({self.person_id}, [self], self))
 
     @property
     def spouse(self) -> Sequence["Person"]:
