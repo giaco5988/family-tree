@@ -1,11 +1,7 @@
-from typing import Dict, Tuple, List, Sequence, Type, Set
+from typing import Dict, Tuple, List, Sequence, Set
 import logging
 import pandas as pd
 import numpy as np
-import os
-from config import path_config
-from graphviz import Digraph, nohtml
-from utils.appearence import AbstractAppearance, SimpleAppearance
 
 LOGGER = logging.getLogger(__name__)
 
@@ -210,55 +206,8 @@ def create_family(df: pd.DataFrame) -> List[Person]:
     return list(persons.values())
 
 
-def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], g: Digraph) -> None:
-    """
-    Create edge and nodes of the graph based on family connections
-    :param persons: List of persons
-    :param appearance: appearance of graph boxes
-    :param g: graph
-    :return: None
-    """
-    LOGGER.info(f'Assembly graph.')
-    # create nodes
-    nodes = set()
-    persons_dict = {x.person_id: x for x in persons}
-    for person in persons:
-        node_name = person.get_node_name()
-        if node_name not in nodes:
-            if len(person.spouse) == 1 and len(person.spouse[0].spouse) == 1:
-                male = person if person.is_male else person.spouse[0]
-                female = person if not person.is_male else person.spouse[0]
-                g.node(node_name, nohtml(appearance.couple(male.name, female.name, male.person_id, female.person_id)))
-            elif len(person.spouse) == 0:
-                g.node(node_name, nohtml(appearance.single_person(person.name, person.person_id)))
-            else:
-                couples = [[(y.person_id, y.name) for y in x] for x in person.get_couples_in_node(persons_dict)]
-                g.node(node_name, nohtml(appearance.multi_couple(couples=couples)))
-            nodes.add(node_name)
-
-    # create edges
-    for person in persons:
-        if len(person.parents) > 0:
-            node_name, parents_node = person.get_node_name(), person.parents[0].get_node_name()
-            parents_ids = f"{person.father_id}{person.mother_id}"
-            edge_str = SimpleAppearance.edge_str(node_name, parents_node, str(person.person_id), parents_ids)
-            g.edge(edge_str[0], edge_str[1])
-
-
 def testing():
-    df = pd.read_csv('/Users/Giacomo/Downloads/family-tree - connections-1.csv')
-    assert len(set(df['id'])) == len(df), f'IDs are not unique.'
-    g = Digraph('g',
-                filename=os.path.join(path_config.OUTPUT_PATH, 'btree_custom.gv'),
-                node_attr={'shape': 'record', 'height': '.1'})
-
-    # create family
-    persons = create_family(df=df)
-
-    # create graph
-    assembly_graph(persons, SimpleAppearance, g)
-
-    g.view()
+    print("ciao")
 
 
 if __name__ == "__main__":
