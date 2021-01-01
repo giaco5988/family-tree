@@ -74,7 +74,7 @@ class Person:
         Get node name from male to female
         :return:
         """
-        tmp = map(lambda x: str(x.person_id), sorted([self, *self._spouses], key=lambda x: x.is_male, reverse=True))
+        tmp = map(lambda x: str(x.person_id), sorted(self.get_persons_in_node(), key=lambda x: x.is_male, reverse=True))
 
         return "node-" + "-".join(tmp)
 
