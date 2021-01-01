@@ -12,44 +12,46 @@ class AbstractAppearance:
 
     @staticmethod
     @abstractmethod
-    def single_person(person_name: str) -> str:
+    def single_person(person_name: str, person_id: int) -> str:
         return ""
 
     @staticmethod
     @abstractmethod
-    def couple(male_name: str, female_name: str) -> str:
+    def couple(male_name: str, female_name: str, male_id: int, female_id: int) -> str:
         return ""
 
     @staticmethod
     @abstractmethod
-    def multi_couple(couples: List[Sequence[str]]) -> str:
+    def multi_couple(couples: List[Sequence[Tuple[int, str]]]) -> str:
+        """
+        :param couples: List containing tuples with ((male_id, male_name), (female_id, female_name))
+        :return: nohtml string as in https://graphviz.readthedocs.io/en/stable/examples.html#structs-revisited-py
+        """
         return ""
 
     @staticmethod
     @abstractmethod
-    def edge_str(node_name: str, parents_node: str, is_male: bool, num_spouse: int) -> Tuple[str, str]:
+    def edge_str(node_name: str, parents_node: str, person_id: str, parents_ids: str) -> Tuple[str, str]:
         return "", ""
 
 
 class SimpleAppearance(AbstractAppearance):
 
     @staticmethod
-    def single_person(person_name: str) -> str:
-        return f"<f0> {person_name}"
+    def single_person(person_name: str, person_id: int) -> str:
+        return f"<{person_id}> {person_name}"
 
     @staticmethod
-    def couple(male_name: str, female_name: str):
-        return f'<f0> {male_name} |<f1>|<f2> {female_name}'
+    def couple(male_name: str, female_name: str, male_id: int, female_id: int):
+        return f'<{male_id}> {male_name} |<{male_id}{female_id}>|<{female_id}> {female_name}'
 
     @staticmethod
-    def edge_str(node_name: str, parents_node: str, is_male: bool, num_spouse: int) -> Tuple[str, str]:
-        place = 'f0' if is_male or num_spouse == 0 else 'f2'
-        return f'{parents_node}:f1', f'{node_name}:{place}'
+    def edge_str(node_name: str, parents_node: str, person_id: str, parents_ids: str) -> Tuple[str, str]:
+        return f'{parents_node}:{parents_ids}', f'{node_name}:{person_id}'
 
     @staticmethod
-    def multi_couple(couples: List[Sequence[str]]) -> str:
+    def multi_couple(couples: List[Sequence[Tuple[int, str]]]) -> str:
         ans = ""
-        for ind, (male, female) in enumerate(couples):
-            ind_1, ind_2, ind_3 = 3*ind, 3*ind+1, 3*ind+2
-            ans = ans + "|" + "{" + f'<f{ind_1}> {male} |<f{ind_2}>|<f{ind_3}> {female}' + "}"
+        for (male_id, male), (female_id, female) in couples:
+            ans = ans + "|" + "{" + f'<{male_id}> {male} |<{male_id}{female_id}>|<{female_id}> {female}' + "}"
         return "{" + ans[1:] + "}"

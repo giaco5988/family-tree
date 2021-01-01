@@ -138,7 +138,7 @@ class Person:
         """
         parents_ids = tuple([self._father_id, self._mother_id])
         if any(not np.isnan(x) for x in parents_ids):
-            self._parents = tuple([persons[x] for x in parents_ids])
+            self._parents = tuple(sorted([persons[x] for x in parents_ids], key=lambda x: x.is_male, reverse=True))
         else:
             self._parents = tuple()
 
@@ -192,11 +192,20 @@ def create_family(df: pd.DataFrame) -> List[Person]:
     LOGGER.info(f"Create family connections.")
     persons = {row['id']: Person(database_row=row) for _, row in df.iterrows()}
 
+    # create connections
     for person in persons.values():
         person.add_parents(persons)
         person.add_spouse(persons)
         person.add_children(list(persons.values()))
         person.add_siblings(list(persons.values()))
+
+    # sanity checks
+    for person in persons.values():
+        if len(person.parents) > 0:
+            assert persons[person.father_id].is_male, f'Father of {person.person_id} should be male.'
+            assert not persons[person.mother_id].is_male, f'Mother of {person.person_id} should be female.'
+            assert person.parents[0] in person.parents[1].get_persons_in_node(),\
+                f'Parents {person.person_id} not in the same node! Check family connections.'
 
     return list(persons.values())
 
@@ -217,16 +226,15 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
         tmp = person.get_node_name()
         if tmp not in nodes:
             if len(person.spouse) == 1 and len(person.spouse[0].spouse) == 1:
-                male = person.name if person.is_male else person.spouse[0].name
-                female = person.name if not person.is_male else person.spouse[0].name
-                g.node(tmp, nohtml(appearance.couple(male_name=male, female_name=female)))
+                male = person if person.is_male else person.spouse[0]
+                female = person if not person.is_male else person.spouse[0]
+                g.node(tmp, nohtml(appearance.couple(male.name, female.name, male.person_id, female.person_id)))
                 nodes.add(tmp)
             elif len(person.spouse) == 0:
-                g.node(tmp, nohtml(appearance.single_person(person.name)))
+                g.node(tmp, nohtml(appearance.single_person(person.name, person.person_id)))
                 nodes.add(tmp)
             else:
-                # TODO: implement this one
-                couples = [[y.name for y in x] for x in person.get_couples_in_node(persons_dict)]
+                couples = [[(y.person_id, y.name) for y in x] for x in person.get_couples_in_node(persons_dict)]
                 g.node(tmp, nohtml(appearance.multi_couple(couples=couples)))
                 nodes.add(tmp)
 
@@ -234,7 +242,8 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
     for person in persons:
         if len(person.parents) > 0:
             node_name, parents_node = person.get_node_name(), person.parents[0].get_node_name()
-            edge_str = SimpleAppearance.edge_str(node_name, parents_node, person.is_male, len(person.spouse))
+            parents_ids = f"{person.father_id}{person.mother_id}"
+            edge_str = SimpleAppearance.edge_str(node_name, parents_node, str(person.person_id), parents_ids)
             g.edge(edge_str[0], edge_str[1])
 
 
