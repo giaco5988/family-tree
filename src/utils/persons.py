@@ -223,20 +223,18 @@ def assembly_graph(persons: List[Person], appearance: Type[AbstractAppearance], 
     nodes = set()
     persons_dict = {x.person_id: x for x in persons}
     for person in persons:
-        tmp = person.get_node_name()
-        if tmp not in nodes:
+        node_name = person.get_node_name()
+        if node_name not in nodes:
             if len(person.spouse) == 1 and len(person.spouse[0].spouse) == 1:
                 male = person if person.is_male else person.spouse[0]
                 female = person if not person.is_male else person.spouse[0]
-                g.node(tmp, nohtml(appearance.couple(male.name, female.name, male.person_id, female.person_id)))
-                nodes.add(tmp)
+                g.node(node_name, nohtml(appearance.couple(male.name, female.name, male.person_id, female.person_id)))
             elif len(person.spouse) == 0:
-                g.node(tmp, nohtml(appearance.single_person(person.name, person.person_id)))
-                nodes.add(tmp)
+                g.node(node_name, nohtml(appearance.single_person(person.name, person.person_id)))
             else:
                 couples = [[(y.person_id, y.name) for y in x] for x in person.get_couples_in_node(persons_dict)]
-                g.node(tmp, nohtml(appearance.multi_couple(couples=couples)))
-                nodes.add(tmp)
+                g.node(node_name, nohtml(appearance.multi_couple(couples=couples)))
+            nodes.add(node_name)
 
     # create edges
     for person in persons:
@@ -256,7 +254,6 @@ def testing():
 
     # create family
     persons = create_family(df=df)
-    persons[26].get_persons_in_node()
 
     # create graph
     assembly_graph(persons, SimpleAppearance, g)
