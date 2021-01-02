@@ -17,10 +17,8 @@ class Person:
         """
         self._person_id = int(database_row['id'])
         self._name = database_row['person_name']
-        tmp = database_row['mother_id']
-        self._mother_id = tmp if np.isnan(tmp) else int(tmp)
-        tmp = database_row['father_id']
-        self._father_id = tmp if np.isnan(tmp) else int(tmp)
+        self._mother_id = Person._get_parent_id(database_row['mother_id'])
+        self._father_id = Person._get_parent_id(database_row['father_id'])
         self._is_male = database_row['sex'] == "M"
         self._children = None
         self._siblings = None
@@ -40,6 +38,13 @@ class Person:
                 if not np.isnan(tmp):
                     self._spouse_ids.append(tmp)
         self._spouse_ids = tuple(self._spouse_ids)
+
+    @staticmethod
+    def _get_parent_id(db_value):
+        try:
+            return db_value if np.isnan(db_value) else int(db_value)
+        except TypeError:
+            return int(db_value)
 
     @property
     def person_id(self) -> int:
