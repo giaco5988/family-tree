@@ -207,6 +207,9 @@ def create_family(df: pd.DataFrame) -> List[Person]:
             assert not persons[person.mother_id].is_male, f'Mother of {person.person_id} should be female.'
             assert person.parents[0] in person.parents[1].get_persons_in_node(),\
                 f'Parents {person.person_id} not in the same node! Check family connections.'
+        if len(person.spouse) > 0:
+            assert all(person in x.spouse for x in person.spouse),\
+                f"Person id={person.person_id} might not be doubly linked with spouse/s."
 
     return list(persons.values())
 
