@@ -17,7 +17,7 @@ See below an example of the csv file for the [Canossa family](https://it.wikiped
 
 and the corresponding family tree
 
-<img src="docs/sample_render.pdf" height="320">
+<img src="docs/sample_render.png" height="320">
 
 ### Installation
 Requirements: Python>=3.6
