@@ -17,7 +17,7 @@ def cli():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Preprocess input data
-    parser.add_argument('--data_path', type=str, help='csv table path')
+    parser.add_argument('--data_path', type=str, help='csv table path', default=None)
     parser.add_argument('--out_dir', type=str, help='output directory path', default=str(Path.home()))
 
     return parser.parse_args()
@@ -25,7 +25,8 @@ def cli():
 
 def main():
     args = cli()
-    assert args.data_path, f'Please provide an input csv file with flag --data_path'
+    if not args.data_path:
+        args.data_path = input("Please enter input csv table path:")
     out_file = update_file_name(os.path.join(args.out_dir, 'family_tree.gv'))
     LOGGER.info(f'Load family connection from  {args.data_path}')
     LOGGER.info(f'Save family tree to {out_file}')
