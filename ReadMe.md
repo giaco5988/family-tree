@@ -13,7 +13,7 @@ marriage_n.
 
 See below an example of the csv file for the [Canossa family](https://it.wikipedia.org/wiki/Canossa_(famiglia)#Genealogia_essenziale).
 
-<img src="docs/sample_csv.png" height="200">
+<img src="docs/sample_csv.png" height="300">
 
 ### Installation
 Requirements: Python>=3.6
