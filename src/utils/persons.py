@@ -208,10 +208,10 @@ def create_family(df: pd.DataFrame) -> List[Person]:
     for person in persons.values():
         if len(person.parents) > 0:
             assert person.parents[0] in person.parents[1].get_persons_in_node(),\
-                f'Parents {person.person_id} not in the same node! Check family connections.'
+                f'Parents of id={person.person_id} are not in the same node! Check family connections.'
         if len(person.spouse) > 0:
-            assert all(person in x.spouse for x in person.spouse),\
-                f"Person id={person.person_id} might not be doubly linked with spouse/s."
+            assert all(person in x.spouse for x in person.spouse), f"Person id={person.person_id} might not be doubly" \
+                f" linked with spouse/s (e.g. if John is Mary's husband, then Mary should be defined as John's wife)."
 
     return list(persons.values())
 
