@@ -1,0 +1,19 @@
+id,person_name,sex,mother_id,father_id,marriage_1
+0,Matilde,F,14,3,
+1,Beatrice,F,14,3,
+2,Federico,M,14,3,
+3,Bonifacio,M,15,6,14
+4,Corrado,M,15,6,
+5,Teodaldo,M,15,6,
+6,Tedaldo,M,16,10,15
+7,Gottifredo I,M,16,10,
+8,Rodolfo,M,16,10,
+9,Prangarda,M,16,10,
+10,Adalberto Atto,M,17,13,16
+11,Sigifredo (Baratti),M,17,13,
+12,Gerardo,M,17,13,
+13,Sigifredo,M,,,17
+14,Bonifacio’s wife,F,,,3
+15,Tedaldo’s wife,F,,,6
+16,Adalberto’s wife,F,,,10
+17,Sigifredo’s wife,F,,,13
