@@ -27,7 +27,7 @@ def cli():
 def main():
     args = cli()
     if not args.data_path:
-        tmp = input("Please enter input csv table path (press enter to use example of Canossa family):")
+        tmp = input("Please enter input csv table path (leave blank to use example of Canossa family):")
         args.data_path = tmp if len(tmp) > 0 else os.path.join(path_config.DOCS_PATH, 'canossa_family.csv')
     out_file = update_file_name(os.path.join(args.out_dir, 'family_tree.gv'))
     LOGGER.info(f'Load family connection from  {args.data_path}')
