@@ -138,11 +138,14 @@ class Person:
         :return: None
         """
         parents_ids = tuple([self._father_id, self._mother_id])
-        if any(not np.isnan(x) for x in parents_ids):
+        if all(not np.isnan(x) for x in parents_ids):
             tmp = [persons[x] for x in filter(lambda x: not np.isnan(x), parents_ids)]
             self._parents = tuple(sorted(tmp, key=lambda x: x.is_male, reverse=True))
-        else:
+        elif all(np.isnan(x) for x in parents_ids):
             self._parents = tuple()
+        else:
+            raise ValueError(f"You need to specify either two parents on none for id={self.person_id}."
+                             f" If one is unknown, use a dummy name (e.g. John and wife-of-john).")
 
     def add_spouse(self, persons: Dict[str, "Person"]) -> None:
         """
@@ -204,8 +207,6 @@ def create_family(df: pd.DataFrame) -> List[Person]:
     # sanity checks
     for person in persons.values():
         if len(person.parents) > 0:
-            assert persons[person.father_id].is_male, f'Father of {person.person_id} should be male.'
-            assert not persons[person.mother_id].is_male, f'Mother of {person.person_id} should be female.'
             assert person.parents[0] in person.parents[1].get_persons_in_node(),\
                 f'Parents {person.person_id} not in the same node! Check family connections.'
         if len(person.spouse) > 0:
