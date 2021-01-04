@@ -139,7 +139,8 @@ class Person:
         """
         parents_ids = tuple([self._father_id, self._mother_id])
         if any(not np.isnan(x) for x in parents_ids):
-            self._parents = tuple(sorted([persons[x] for x in parents_ids], key=lambda x: x.is_male, reverse=True))
+            tmp = [persons[x] for x in filter(lambda x: not np.isnan(x), parents_ids)]
+            self._parents = tuple(sorted(tmp, key=lambda x: x.is_male, reverse=True))
         else:
             self._parents = tuple()
 
