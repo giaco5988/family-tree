@@ -30,6 +30,7 @@ Create virtual environment and install packages
 ```
 $ python3 -m venv venv_ft
 $ source venv_ft/bin/activate
+$ cd family-tree
 (venv_ft) $ pip install -r requirements.txt
 ```
 
