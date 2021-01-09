@@ -36,7 +36,7 @@ $ cd family-tree
 
 ### Run code and create family tree
 
-Enter the repository and run the `main.py` script
+Run the `main.py` script by typing
 ```
 (venv_ft) $ python src/main.py
 ```
