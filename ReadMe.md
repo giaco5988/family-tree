@@ -38,7 +38,6 @@ $ cd family-tree
 
 Enter the repository and run the `main.py` script
 ```
-(venv_ft) $ cd family-tree
 (venv_ft) $ python src/main.py
 ```
 By default, the result is displayed and saved to your home directory.
