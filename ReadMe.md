@@ -34,6 +34,8 @@ $ cd family-tree
 (venv_ft) $ pip install -r requirements.txt
 ```
 
+Install [Graphviz](https://www.graphviz.org/download/).
+
 ### Run code and create family tree
 
 Run the `main.py` script by typing
