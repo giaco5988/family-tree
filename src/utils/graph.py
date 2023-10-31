@@ -1,5 +1,5 @@
 import os
-from typing import List, Type
+from typing import List, Type, Optional
 import logging
 
 import pandas as pd
@@ -10,6 +10,14 @@ from utils.appearence import AbstractAppearance, SimpleAppearance
 from utils.persons import Person, create_family
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _get_link_for_persons_in_one_node(persons: List[Person]) -> Optional[str]:
+    links = [p.link_to_info for p in persons if p.link_to_info is not None]
+    set_of_links = set(links)
+    assert len(set_of_links) <= 1, f'Found more than one link for persons in one node: {set_of_links}'
+
+    return set_of_links.pop() if len(set_of_links) == 1 else None
 
 
 class GraphAssembler:
@@ -62,13 +70,20 @@ class GraphAssembler:
                 if len(person.spouse) == 1 and len(person.spouse[0].spouse) == 1:
                     male = person if person.is_male else person.spouse[0]
                     female = person if not person.is_male else person.spouse[0]
-                    self._graph.node(node_name,
-                                     nohtml(self._ui.couple(male.name, female.name, male.person_id, female.person_id)))
+                    self._graph.node(
+                        node_name,
+                        nohtml(self._ui.couple(male.name, female.name, male.person_id, female.person_id)),
+                        URL=_get_link_for_persons_in_one_node(persons=[male, female]),
+                    )
                 elif len(person.spouse) == 0:
-                    self._graph.node(node_name, nohtml(self._ui.single_person(person.name, person.person_id)))
+                    self._graph.node(node_name, nohtml(self._ui.single_person(person.name, person.person_id)), URL=person.link_to_info)
                 else:
                     couples = [[(y.person_id, y.name) for y in x] for x in person.get_couples_in_node(persons_dict)]
-                    self._graph.node(node_name, nohtml(self._ui.multi_couple(couples=couples)))
+                    self._graph.node(
+                        node_name,
+                        nohtml(self._ui.multi_couple(couples=couples)),
+                        URL=_get_link_for_persons_in_one_node(persons=person.get_persons_in_node()),
+                    )
                 nodes.add(node_name)
 
 

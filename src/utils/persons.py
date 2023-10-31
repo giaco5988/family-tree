@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List, Sequence, Set
+from typing import Dict, Tuple, List, Sequence, Set, Optional
 import logging
 import pandas as pd
 import numpy as np
@@ -20,6 +20,7 @@ class Person:
         self._mother_id = Person._get_parent_id(database_row['mother_id'])
         self._father_id = Person._get_parent_id(database_row['father_id'])
         self._is_male = database_row['sex'] == "M"
+        self._link_to_info = database_row['link_to_info'] if not pd.isnull(database_row['link_to_info']) else None
         self._children = None
         self._siblings = None
         self._half_siblings = None
@@ -38,6 +39,10 @@ class Person:
                 if not np.isnan(tmp):
                     self._spouse_ids.append(tmp)
         self._spouse_ids = tuple(self._spouse_ids)
+
+    @property
+    def link_to_info(self) -> Optional[str]:
+        return self._link_to_info
 
     @staticmethod
     def _get_parent_id(db_value):
