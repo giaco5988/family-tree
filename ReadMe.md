@@ -26,6 +26,8 @@ Clone the repository:
 ```bash
 $ git clone git@github.com:giaco5988/family-tree.git
 ```
+or `git clone https://github.com/giaco5988/family-tree.git`, depending on your settings.
+
 Create virtual environment and install packages
 ```
 $ python3 -m venv venv_ft
